@@ -11,10 +11,10 @@ use crate::{Error, Result};
 
 use super::FamilyCommand;
 
-pub struct Children;
+pub struct ChildrenCommand;
 
 #[async_trait]
-impl FamilyCommand<Vec<String>> for Children {
+impl FamilyCommand<Vec<String>> for ChildrenCommand {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,

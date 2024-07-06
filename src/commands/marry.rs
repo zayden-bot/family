@@ -13,7 +13,7 @@ use super::FamilyCommand;
 
 const MAX_PARTNERS: usize = 1;
 
-struct MarryCommand;
+pub struct MarryCommand;
 
 #[async_trait]
 impl FamilyCommand<()> for MarryCommand {

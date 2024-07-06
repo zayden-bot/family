@@ -9,6 +9,13 @@ mod adopt;
 mod block;
 mod children;
 mod marry;
+mod parents;
+
+pub use adopt::AdoptCommand;
+pub use block::{BlockCommand, UnblockCommand};
+pub use children::ChildrenCommand;
+pub use marry::MarryCommand;
+pub use parents::ParentsCommand;
 
 #[async_trait]
 trait FamilyCommand<T> {

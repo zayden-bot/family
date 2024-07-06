@@ -4,46 +4,51 @@ use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     Mentionable, ResolvedOption, ResolvedValue,
 };
+use sqlx::{Database, Pool};
 
-use crate::sqlx_lib::PostgresPool;
-use crate::{utils::message_response, Error, Result};
+use crate::family_manager::FamilyManager;
+use crate::{Error, Result};
 
-use super::{FamilyCommand, FamilyRow};
+use super::FamilyCommand;
 
 pub struct ParentsCommand;
 
 #[async_trait]
 impl FamilyCommand<()> for ParentsCommand {
-    async fn run(ctx: &Context, interaction: &CommandInteraction) -> Result<()> {
-        let user = match interaction.data.options().first() {
-            Some(ResolvedOption {
-                value: ResolvedValue::User(user, _),
-                ..
-            }) => *user,
-            _ => &interaction.user,
-        };
+    async fn run<Db: Database, Manager: FamilyManager<Db>>(
+        ctx: &Context,
+        interaction: &CommandInteraction,
+        pool: &Pool<Db>,
+    ) -> Result<()> {
+        // let user = match interaction.data.options().first() {
+        //     Some(ResolvedOption {
+        //         value: ResolvedValue::User(user, _),
+        //         ..
+        //     }) => *user,
+        //     _ => &interaction.user,
+        // };
 
-        let row = FamilyRow::safe_get(ctx, user.id).await?;
+        // let row = FamilyRow::safe_get(ctx, user.id).await?;
 
-        if row.parent_ids.is_empty() {
-            if user == &interaction.user {
-                message_response(ctx, interaction, "You have no siblings").await?;
-                return Ok(());
-            }
+        // if row.parent_ids.is_empty() {
+        //     if user == &interaction.user {
+        //         message_response(ctx, interaction, "You have no siblings").await?;
+        //         return Ok(());
+        //     }
 
-            message_response(
-                ctx,
-                interaction,
-                format!("{} has no siblings", user.mention()),
-            )
-            .await?;
-            return Ok(());
-        }
+        //     message_response(
+        //         ctx,
+        //         interaction,
+        //         format!("{} has no siblings", user.mention()),
+        //     )
+        //     .await?;
+        //     return Ok(());
+        // }
 
-        let pool = PostgresPool::get(ctx).await;
-        let row = FamilyRow::safe_get(ctx, user.id).await?;
+        // let pool = PostgresPool::get(ctx).await;
+        // let row = FamilyRow::safe_get(ctx, user.id).await?;
 
-        todo!();
+        // todo!();
 
         // let sibling_ids = stream::iter(family_member.siblings().await.into_iter())
         //     .then(|sib_data| async move {

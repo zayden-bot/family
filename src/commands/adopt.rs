@@ -11,7 +11,7 @@ use crate::Error;
 
 use super::FamilyCommand;
 
-struct AdoptCommand;
+pub struct AdoptCommand;
 
 #[async_trait]
 impl FamilyCommand<()> for AdoptCommand {
