@@ -18,7 +18,7 @@ pub use marry::MarryCommand;
 pub use parents::ParentsCommand;
 
 #[async_trait]
-trait FamilyCommand<T> {
+pub trait FamilyCommand<T> {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
