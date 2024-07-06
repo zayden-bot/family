@@ -10,7 +10,7 @@ use zayden_core::SlashCommand;
 
 pub use error::{Error, Result};
 
-mod commands;
+pub mod commands;
 mod components;
 mod error;
 mod family_manager;
