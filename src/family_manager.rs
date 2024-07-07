@@ -8,7 +8,7 @@ use crate::Result;
 
 #[async_trait]
 pub trait FamilyManager<Db: Database> {
-    async fn get_row(pool: &Pool<Db>, user_id: impl Into<i64>) -> Result<Option<FamilyRow>>;
+    async fn get_row(pool: &Pool<Db>, user_id: impl Into<i64> + Send) -> Result<Option<FamilyRow>>;
 
     async fn tree(
         pool: &Pool<Db>,
