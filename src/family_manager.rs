@@ -82,14 +82,16 @@ impl FamilyRow {
         self,
         pool: &Pool<Db>,
     ) -> Result<HashMap<i32, Vec<FamilyRow>>> {
-        Manager::tree(pool, self, HashMap::new(), 0, true, true).await
+        let tree = Manager::tree(pool, self, HashMap::new(), 0, true, true).await?;
+        Ok(tree)
     }
 
     pub async fn save<Db: Database, Manager: FamilyManager<Db>>(
         &self,
         pool: &Pool<Db>,
     ) -> Result<()> {
-        Manager::save(pool, self).await
+        Manager::save(pool, self).await?;
+        Ok(())
     }
 }
 
