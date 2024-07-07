@@ -4,7 +4,7 @@ use sqlx::{Database, Pool};
 use crate::family_manager::FamilyManager;
 use crate::{Error, Result};
 
-async fn accept<Db: Database, Manager: FamilyManager<Db>>(
+pub async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     interaction: &ComponentInteraction,
     pool: &Pool<Db>,
 ) -> Result<()> {
@@ -40,7 +40,7 @@ async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     Ok(())
 }
 
-async fn decline(interaction: &ComponentInteraction) -> Result<()> {
+pub async fn decline(interaction: &ComponentInteraction) -> Result<()> {
     if !interaction.message.mentions.contains(&interaction.user) {
         return Err(Error::UnauthorisedUser);
     }

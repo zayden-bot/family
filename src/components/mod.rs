@@ -1,2 +1,2 @@
-mod adopt;
-mod marry;
+pub mod adopt;
+pub mod marry;
