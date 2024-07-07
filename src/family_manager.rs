@@ -33,6 +33,14 @@ pub struct FamilyRow {
 }
 
 impl FamilyRow {
+    pub fn new(id: i64, username: String) -> Self {
+        Self {
+            id,
+            username,
+            ..Default::default()
+        }
+    }
+
     pub fn add_blocked(&mut self, user_id: UserId) {
         self.blocked_ids.push(user_id.get() as i64);
     }
