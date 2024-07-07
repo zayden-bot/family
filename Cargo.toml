@@ -8,6 +8,7 @@ sqlx = { version = "*", default-features = false, features = ["macros"] }
 zayden-core = { git = "https://github.com/zayden-bot/slash-command-core.git", branch = "master" }
 async-trait = { version = "*", default-features = false }
 futures = { version = "*", default-features = false }
+charming = { version = "*", default-features = false }
 
 [dependencies.serenity]
 git = "https://github.com/serenity-rs/serenity"
