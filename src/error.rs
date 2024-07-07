@@ -39,6 +39,7 @@ pub enum Error {
     // region marry
     UserSelfMarry,
     MaxPartners,
+    MarryCancelled,
     // endregion
 
     // region parents

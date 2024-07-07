@@ -1,4 +1,4 @@
-use serenity::all::{ComponentInteraction, Context};
+use serenity::all::ComponentInteraction;
 use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
@@ -40,7 +40,7 @@ async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     Ok(())
 }
 
-pub async fn decline(ctx: &Context, interaction: &ComponentInteraction) -> Result<()> {
+pub async fn decline(interaction: &ComponentInteraction) -> Result<()> {
     if !interaction.message.mentions.contains(&interaction.user) {
         return Err(Error::UnauthorisedUser);
     }
@@ -53,8 +53,7 @@ pub async fn decline(ctx: &Context, interaction: &ComponentInteraction) -> Resul
         .user;
 
     if author.id == interaction.user.id {
-        interaction.delete_response(ctx).await?;
-        return Ok(());
+        return Err(Error::MarryCancelled);
     }
 
     Ok(())
