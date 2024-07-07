@@ -1,4 +1,4 @@
-use serenity::all::ComponentInteraction;
+use serenity::all::{ComponentInteraction, UserId};
 use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
@@ -7,7 +7,7 @@ use crate::{Error, Result};
 pub async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     interaction: &ComponentInteraction,
     pool: &Pool<Db>,
-) -> Result<()> {
+) -> Result<UserId> {
     let parent_user = &interaction
         .message
         .interaction
@@ -37,7 +37,7 @@ pub async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     row.save::<Db, Manager>(pool).await?;
     child_row.save::<Db, Manager>(pool).await?;
 
-    Ok(())
+    Ok(parent_user.id)
 }
 
 pub async fn decline(interaction: &ComponentInteraction) -> Result<()> {
