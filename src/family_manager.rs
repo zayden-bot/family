@@ -8,7 +8,10 @@ use crate::Result;
 
 #[async_trait]
 pub trait FamilyManager<Db: Database> {
-    async fn get_row(pool: &Pool<Db>, user_id: impl Into<i64> + Send) -> Result<Option<FamilyRow>>;
+    async fn get_row(
+        pool: &Pool<Db>,
+        user_id: impl Into<i64> + Send,
+    ) -> sqlx::Result<Option<FamilyRow>>;
 
     async fn tree(
         pool: &Pool<Db>,
@@ -17,9 +20,9 @@ pub trait FamilyManager<Db: Database> {
         depth: i32,
         add_parents: bool,
         add_partners: bool,
-    ) -> Result<HashMap<i32, Vec<FamilyRow>>>;
+    ) -> sqlx::Result<HashMap<i32, Vec<FamilyRow>>>;
 
-    async fn save(pool: &Pool<Db>, row: &FamilyRow) -> Result<()>;
+    async fn save(pool: &Pool<Db>, row: &FamilyRow) -> sqlx::Result<()>;
 }
 
 #[derive(Debug, Default, Clone, PartialEq, FromRow)]
