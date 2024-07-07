@@ -1,21 +1,25 @@
 use async_trait::async_trait;
-use futures::{stream, StreamExt, TryFutureExt, TryStreamExt};
+use futures::{stream, StreamExt, TryStreamExt};
 use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    CreateEmbed, Mentionable, ResolvedOption, ResolvedValue, UserId,
+    Mentionable, ResolvedOption, ResolvedValue, UserId,
 };
-use zayden_core::SlashCommand;
+use sqlx::{Database, Pool};
 
+use crate::family_manager::FamilyManager;
 use crate::{Error, Result};
-use crate::utils::{embed_response, message_response};
 
-use super::FamilyRow;
+use super::FamilyCommand;
 
-pub struct Partners;
+pub struct PartnersCommand;
 
 #[async_trait]
-impl SlashCommand<Error> for Partners {
-    async fn run(ctx: &Context, interaction: &CommandInteraction) -> Result<()> {
+impl FamilyCommand<Vec<String>> for PartnersCommand {
+    async fn run<Db: Database, Manager: FamilyManager<Db>>(
+        ctx: &Context,
+        interaction: &CommandInteraction,
+        pool: &Pool<Db>,
+    ) -> Result<Vec<String>> {
         let user = match interaction.data.options().first() {
             Some(ResolvedOption {
                 value: ResolvedValue::User(user, _),
@@ -24,45 +28,30 @@ impl SlashCommand<Error> for Partners {
             _ => &interaction.user,
         };
 
-        let row = FamilyRow::safe_get(ctx, user.id).await?;
+        let row = match Manager::get_row(pool, user.id).await? {
+            Some(row) => row,
+            None => (&interaction.user).into(),
+        };
 
         if row.partner_ids.is_empty() {
             if user == &interaction.user {
-                message_response(ctx, interaction, "You're not currently married").await?;
-                return Ok(());
+                return Err(Error::SelfNoPartners);
             }
 
-            message_response(
-                ctx,
-                interaction,
-                format!("{} is not currently married", user.mention()),
-            )
-            .await?;
-            return Ok(());
+            return Err(Error::NoPartners(user.id));
         }
 
-        let partners = stream::iter(row.partner_ids)
-            .then(|id| {
-                UserId::new(id as u64)
-                    .to_user(ctx)
-                    .map_ok(|user| user.mention().to_string())
+        let parents: Vec<String> = stream::iter(row.partner_ids)
+            .then(|id| async move {
+                let user_id = UserId::new(id as u64);
+                let user = user_id.to_user(ctx).await?;
+
+                Ok::<String, serenity::Error>(user.mention().to_string())
             })
-            .try_collect::<Vec<_>>()
+            .try_collect()
             .await?;
 
-        let desc = if user == &interaction.user {
-            format!("You are currently married to {}", partners.join(", "))
-        } else {
-            format!(
-                "{} is currently married to {}",
-                user.mention(),
-                partners.join(", ")
-            )
-        };
-
-        embed_response(ctx, interaction, CreateEmbed::new().description(desc)).await?;
-
-        Ok(())
+        Ok(parents)
     }
 
     fn register() -> CreateCommand {

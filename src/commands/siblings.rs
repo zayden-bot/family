@@ -2,20 +2,24 @@ use async_trait::async_trait;
 use futures::{stream, StreamExt, TryStreamExt};
 use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    CreateEmbed, Mentionable, ResolvedOption, ResolvedValue, UserId,
+    Mentionable, ResolvedOption, ResolvedValue, UserId,
 };
-use zayden_core::SlashCommand;
+use sqlx::{Database, Pool};
 
-use crate::{Error, Result, utils::{embed_response, message_response}};
-use crate::sqlx_lib::PostgresPool;
+use crate::family_manager::FamilyManager;
+use crate::{Error, Result};
 
-use super::FamilyRow;
+use super::FamilyCommand;
 
-pub struct Siblings;
+pub struct SiblingsCommand;
 
 #[async_trait]
-impl SlashCommand<Error> for Siblings {
-    async fn run(ctx: &Context, interaction: &CommandInteraction) -> Result<()> {
+impl FamilyCommand<Vec<String>> for SiblingsCommand {
+    async fn run<Db: Database, Manager: FamilyManager<Db>>(
+        ctx: &Context,
+        interaction: &CommandInteraction,
+        pool: &Pool<Db>,
+    ) -> Result<Vec<String>> {
         let user = match interaction.data.options().first() {
             Some(ResolvedOption {
                 value: ResolvedValue::User(user, _),
@@ -24,69 +28,38 @@ impl SlashCommand<Error> for Siblings {
             _ => &interaction.user,
         };
 
-        let row = FamilyRow::safe_get(ctx, user.id).await?;
+        let row = match Manager::get_row(pool, user.id).await? {
+            Some(row) => row,
+            None => (&interaction.user).into(),
+        };
 
         if row.parent_ids.is_empty() {
             if user == &interaction.user {
-                message_response(ctx, interaction, "You have no siblings").await?;
-                return Ok(());
+                return Err(Error::SelfNoParents);
             }
 
-            message_response(
-                ctx,
-                interaction,
-                format!("{} has no siblings", user.mention()),
-            )
-            .await?;
-            return Ok(());
+            return Err(Error::NoParents(user.id));
         }
 
-        let pool = PostgresPool::get(ctx).await;
-        let row = FamilyRow::safe_get(ctx, user.id).await?;
-
-        let sibling_ids = row.sibling_ids(&pool).try_collect::<Vec<_>>().await?;
-
-        let sibling_names = stream::iter(sibling_ids)
+        let siblings: Vec<String> = stream::iter(row.parent_ids)
             .then(|id| async move {
-                let user_id = UserId::new(id as u64);
+                if let Some(row) = Manager::get_row(pool, id).await? {
+                    for sib_id in row.children_ids {
+                        if sib_id != row.id {
+                            let user_id = UserId::new(sib_id as u64);
+                            let user = user_id.to_user(ctx).await?;
 
-                if let Some(guild_id) = interaction.guild_id {
-                    if let Ok(member) = guild_id.member(ctx, user_id).await {
-                        return Ok(member.user.mention().to_string());
+                            return Ok::<String, Error>(user.mention().to_string());
+                        }
                     }
                 }
 
-                user_id.to_user(ctx).await.map(|user| user.name)
+                Err(Error::NoData(UserId::new(id as u64)))
             })
-            .try_collect::<Vec<_>>()
+            .try_collect()
             .await?;
 
-        let siblings_plural = if sibling_names.len() == 1 {
-            "sibling"
-        } else {
-            "siblings"
-        };
-
-        let desc = if user == &interaction.user {
-            format!(
-                "You have {} {}:\n{}",
-                sibling_names.len(),
-                siblings_plural,
-                sibling_names.join("\n")
-            )
-        } else {
-            format!(
-                "{} has {} {}:\n{}",
-                user.mention(),
-                sibling_names.len(),
-                siblings_plural,
-                sibling_names.join("\n")
-            )
-        };
-
-        embed_response(ctx, interaction, CreateEmbed::new().description(desc)).await?;
-
-        Ok(())
+        Ok(siblings)
     }
 
     fn register() -> CreateCommand {

@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use serenity::all::{User, UserId};
 use sqlx::{Database, FromRow, Pool};
+use std::collections::HashMap;
 
 use crate::relationships::Relationship;
 use crate::Result;
@@ -8,6 +9,15 @@ use crate::Result;
 #[async_trait]
 pub trait FamilyManager<Db: Database> {
     async fn get_row(pool: &Pool<Db>, user_id: impl Into<i64>) -> Result<Option<FamilyRow>>;
+
+    async fn tree(
+        pool: &Pool<Db>,
+        user: FamilyRow,
+        mut tree: HashMap<i32, Vec<FamilyRow>>,
+        depth: i32,
+        add_parents: bool,
+        add_partners: bool,
+    ) -> Result<HashMap<i32, Vec<FamilyRow>>>;
 
     async fn save(pool: &Pool<Db>, row: &FamilyRow) -> Result<()>;
 }
@@ -55,6 +65,13 @@ impl FamilyRow {
         } else {
             Relationship::None
         }
+    }
+
+    pub async fn tree<Db: Database, Manager: FamilyManager<Db>>(
+        self,
+        pool: &Pool<Db>,
+    ) -> Result<HashMap<i32, Vec<FamilyRow>>> {
+        Manager::tree(pool, self, HashMap::new(), 0, true, true).await
     }
 
     pub async fn save<Db: Database, Manager: FamilyManager<Db>>(

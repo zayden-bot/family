@@ -10,12 +10,20 @@ mod block;
 mod children;
 mod marry;
 mod parents;
+mod partners;
+mod relationship;
+mod siblings;
+mod tree;
 
 pub use adopt::AdoptCommand;
 pub use block::{BlockCommand, UnblockCommand};
 pub use children::ChildrenCommand;
 pub use marry::MarryCommand;
 pub use parents::ParentsCommand;
+pub use partners::PartnersCommand;
+pub use relationship::RelationshipCommand;
+pub use siblings::SiblingsCommand;
+pub use tree::TreeCommand;
 
 #[async_trait]
 pub trait FamilyCommand<T> {

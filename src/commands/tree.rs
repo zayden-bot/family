@@ -1,16 +1,14 @@
-use charming::{
-    Chart,
-    element::{Color, LineStyle},
-    ImageFormat, ImageRenderer, series::{Graph, GraphData, GraphLayout, GraphLink, GraphNode, GraphNodeLabel},
-};
+use async_trait::async_trait;
+use charming::series::{GraphData, GraphLink, GraphNode, GraphNodeLabel};
 use serenity::all::{
-    CommandInteraction, CommandOptionType, Context, CreateAttachment, CreateCommand,
-    CreateCommandOption, EditInteractionResponse,
+    CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
 };
+use sqlx::{Database, Pool};
 
-use crate::sqlx_lib::PostgresPool;
+use crate::family_manager::FamilyManager;
+use crate::Result;
 
-use super::{FamilyRow, Result};
+use super::FamilyCommand;
 
 #[derive(Debug)]
 struct Node {
@@ -66,87 +64,72 @@ impl From<&Node> for GraphNode {
     }
 }
 
-fn render_graph(data: GraphData) -> Result<Vec<u8>> {
-    let chart = Chart::new().series(
-        Graph::new()
-            .layout(GraphLayout::None)
-            .line_style(
-                LineStyle::new()
-                    .color(Color::Value(String::from("#ffffff")))
-                    .width(10),
-            )
-            .data(data),
-    );
-    let mut renderer = ImageRenderer::new(1920, 1080);
-    Ok(renderer.render_format(ImageFormat::Png, &chart)?)
-}
+pub struct TreeCommand;
 
-pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> Result<()> {
-    interaction.defer(ctx).await?;
+#[async_trait]
+impl FamilyCommand<GraphData> for TreeCommand {
+    async fn run<Db: Database, Manager: FamilyManager<Db>>(
+        _ctx: &Context,
+        interaction: &CommandInteraction,
+        pool: &Pool<Db>,
+    ) -> Result<GraphData> {
+        let row = match Manager::get_row(pool, interaction.user.id).await? {
+            Some(row) => row,
+            None => (&interaction.user).into(),
+        };
 
-    let pool = PostgresPool::get(ctx).await;
+        let tree = row.tree::<Db, Manager>(pool).await?;
 
-    let member = FamilyRow::safe_get(ctx, interaction.user.id).await?;
+        let mut keys: Vec<i32> = tree.keys().copied().collect();
+        keys.sort();
 
-    let tree = member.tree(&pool, true, true).await?;
+        let max_width = tree.values().map(|v| v.len()).max().unwrap_or(0);
 
-    let mut keys: Vec<i32> = tree.keys().copied().collect();
-    keys.sort();
-
-    let max_width = tree.values().map(|v| v.len()).max().unwrap_or(0);
-
-    let mut nodes = Vec::new();
-    for depth in keys {
-        let values = tree.get(&depth).unwrap();
-        let width = values.len();
-        let width_diff = max_width - width;
-        let spacing = width_diff as f64 / 2.0;
-        for (index, value) in values.iter().enumerate() {
-            let mut node = Node::new(
-                value.id,
-                value.username.clone(),
-                spacing + index as f64,
-                depth as f64,
-            );
-            for id in value.children_ids.iter().chain(value.partner_ids.iter()) {
-                node = node.add_link(*id);
+        let mut nodes = Vec::new();
+        for depth in keys {
+            let values = tree.get(&depth).unwrap();
+            let width = values.len();
+            let width_diff = max_width - width;
+            let spacing = width_diff as f64 / 2.0;
+            for (index, value) in values.iter().enumerate() {
+                let mut node = Node::new(
+                    value.id,
+                    value.username.clone(),
+                    spacing + index as f64,
+                    depth as f64,
+                );
+                for id in value.children_ids.iter().chain(value.partner_ids.iter()) {
+                    node = node.add_link(*id);
+                }
+                nodes.push(node);
             }
-            nodes.push(node);
         }
+
+        let data = GraphData {
+            nodes: nodes.iter().map(GraphNode::from).collect(),
+            links: nodes
+                .iter()
+                .flat_map(|node| {
+                    node.link.iter().map(|link| GraphLink {
+                        source: node.id.to_string(),
+                        target: link.to_string(),
+                        value: None,
+                    })
+                })
+                .collect(),
+            categories: Vec::new(),
+        };
+
+        Ok(data)
     }
 
-    let data = GraphData {
-        nodes: nodes.iter().map(GraphNode::from).collect(),
-        links: nodes
-            .iter()
-            .flat_map(|node| {
-                node.link.iter().map(|link| GraphLink {
-                    source: node.id.to_string(),
-                    target: link.to_string(),
-                    value: None,
-                })
-            })
-            .collect(),
-        categories: Vec::new(),
-    };
-
-    interaction
-        .edit_response(
-            ctx,
-            EditInteractionResponse::new()
-                .new_attachment(CreateAttachment::bytes(render_graph(data)?, "graph.png")),
-        )
-        .await?;
-
-    Ok(())
-}
-
-pub fn register() -> CreateCommand {
-    CreateCommand::new("tree")
-        .description("Adopt another user into your family.")
-        .add_option(CreateCommandOption::new(
-            CommandOptionType::User,
-            "user",
-            "The user to adopt.",
-        ))
+    fn register() -> CreateCommand {
+        CreateCommand::new("tree")
+            .description("Adopt another user into your family.")
+            .add_option(CreateCommandOption::new(
+                CommandOptionType::User,
+                "user",
+                "The user to adopt.",
+            ))
+    }
 }

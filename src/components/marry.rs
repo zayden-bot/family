@@ -4,8 +4,6 @@ use sqlx::{Database, Pool};
 use crate::family_manager::FamilyManager;
 use crate::{Error, Result};
 
-const MAX_PARTNERS: usize = 1;
-
 async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     interaction: &ComponentInteraction,
     pool: &Pool<Db>,
@@ -23,12 +21,12 @@ async fn accept<Db: Database, Manager: FamilyManager<Db>>(
         return Err(Error::UnauthorisedUser);
     };
 
-    let mut row = match Manager::get_row(&pool, author.id).await? {
+    let mut row = match Manager::get_row(pool, author.id).await? {
         Some(row) => row,
         None => author.into(),
     };
 
-    let mut partner_row = match Manager::get_row(&pool, partner.id).await? {
+    let mut partner_row = match Manager::get_row(pool, partner.id).await? {
         Some(row) => row,
         None => partner.into(),
     };
@@ -36,8 +34,8 @@ async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     row.add_partner(&partner_row);
     partner_row.add_partner(&row);
 
-    row.save::<Db, Manager>(&pool).await?;
-    partner_row.save::<Db, Manager>(&pool).await?;
+    row.save::<Db, Manager>(pool).await?;
+    partner_row.save::<Db, Manager>(pool).await?;
 
     Ok(())
 }

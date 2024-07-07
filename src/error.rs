@@ -18,6 +18,7 @@ pub enum Error {
     NoMentionedUser,
     NoInteraction,
     SameUser(UserId),
+    NoData(UserId),
     // endregion
 
     // region adopt
@@ -38,6 +39,21 @@ pub enum Error {
     // region marry
     UserSelfMarry,
     MaxPartners,
+    // endregion
+
+    // region parents
+    SelfNoParents,
+    NoParents(UserId),
+    // endregion
+
+    // region partners
+    SelfNoPartners,
+    NoPartners(UserId),
+    // endregion
+
+    // region siblings
+    SelfNoSiblings,
+    NoSiblings(UserId),
     // endregion
 
     // region external

@@ -39,7 +39,7 @@ impl FamilyCommand<()> for MarryCommand {
             return Err(Error::Bot);
         }
 
-        if let Some(row) = Manager::get_row(&pool, interaction.user.id).await? {
+        if let Some(row) = Manager::get_row(pool, interaction.user.id).await? {
             let relationship = row.relationship(target_user.id);
 
             if relationship != Relationship::None {
@@ -54,7 +54,7 @@ impl FamilyCommand<()> for MarryCommand {
             }
         }
 
-        if let Some(row) = Manager::get_row(&pool, target_user.id).await? {
+        if let Some(row) = Manager::get_row(pool, target_user.id).await? {
             if row.partner_ids.len() >= MAX_PARTNERS {
                 return Err(Error::MaxPartners);
             }
