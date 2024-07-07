@@ -64,10 +64,10 @@ impl From<&Node> for GraphNode {
     }
 }
 
-pub struct TreeCommand;
+pub struct Tree;
 
 #[async_trait]
-impl FamilyCommand<GraphData> for TreeCommand {
+impl FamilyCommand<GraphData> for Tree {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         _ctx: &Context,
         interaction: &CommandInteraction,

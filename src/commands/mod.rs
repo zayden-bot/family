@@ -15,15 +15,15 @@ mod relationship;
 mod siblings;
 mod tree;
 
-pub use adopt::AdoptCommand;
-pub use block::{BlockCommand, UnblockCommand};
-pub use children::ChildrenCommand;
-pub use marry::MarryCommand;
-pub use parents::ParentsCommand;
-pub use partners::PartnersCommand;
-pub use relationship::RelationshipCommand;
-pub use siblings::SiblingsCommand;
-pub use tree::TreeCommand;
+pub use adopt::Adopt;
+pub use block::{Block, Unblock};
+pub use children::Children;
+pub use marry::Marry;
+pub use parents::Parents;
+pub use partners::Partners;
+pub use relationship::RelationshipCmd;
+pub use siblings::Siblings;
+pub use tree::Tree;
 
 #[async_trait]
 pub trait FamilyCommand<T> {

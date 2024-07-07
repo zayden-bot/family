@@ -10,10 +10,10 @@ use crate::{Error, Result};
 
 use super::FamilyCommand;
 
-pub struct BlockCommand;
+pub struct Block;
 
 #[async_trait]
-impl FamilyCommand<()> for BlockCommand {
+impl FamilyCommand<()> for Block {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         _ctx: &Context,
         interaction: &CommandInteraction,
@@ -50,10 +50,10 @@ impl FamilyCommand<()> for BlockCommand {
     }
 }
 
-pub struct UnblockCommand;
+pub struct Unblock;
 
 #[async_trait]
-impl FamilyCommand<()> for UnblockCommand {
+impl FamilyCommand<()> for Unblock {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         _ctx: &Context,
         interaction: &CommandInteraction,

@@ -13,10 +13,10 @@ use super::FamilyCommand;
 
 const MAX_PARTNERS: usize = 1;
 
-pub struct MarryCommand;
+pub struct Marry;
 
 #[async_trait]
-impl FamilyCommand<()> for MarryCommand {
+impl FamilyCommand<()> for Marry {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,

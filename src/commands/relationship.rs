@@ -12,10 +12,10 @@ use crate::{Error, Result};
 
 use super::FamilyCommand;
 
-pub struct RelationshipCommand;
+pub struct RelationshipCmd;
 
 #[async_trait]
-impl FamilyCommand<Relationship> for RelationshipCommand {
+impl FamilyCommand<Relationship> for RelationshipCmd {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,

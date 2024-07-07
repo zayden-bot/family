@@ -11,10 +11,10 @@ use crate::Error;
 
 use super::FamilyCommand;
 
-pub struct AdoptCommand;
+pub struct Adopt;
 
 #[async_trait]
-impl FamilyCommand<()> for AdoptCommand {
+impl FamilyCommand<()> for Adopt {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
