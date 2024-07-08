@@ -13,14 +13,14 @@ pub trait FamilyManager<Db: Database> {
         user_id: impl Into<i64> + Send,
     ) -> sqlx::Result<Option<FamilyRow>>;
 
-    async fn tree(
+    async fn tree<'a>(
         pool: &Pool<Db>,
         user_id: impl Into<i64> + Send,
-        mut tree: HashMap<i32, Vec<FamilyRow>>,
+        mut tree: HashMap<i32, Vec<&'a FamilyRow>>,
         depth: i32,
         add_parents: bool,
         add_partners: bool,
-    ) -> sqlx::Result<HashMap<i32, Vec<FamilyRow>>>;
+    ) -> sqlx::Result<HashMap<i32, Vec<&'a FamilyRow>>>;
 
     async fn save(pool: &Pool<Db>, row: &FamilyRow) -> sqlx::Result<()>;
 }
@@ -78,10 +78,10 @@ impl FamilyRow {
         }
     }
 
-    pub async fn tree<Db: Database, Manager: FamilyManager<Db>>(
+    pub async fn tree<'a, Db: Database, Manager: FamilyManager<Db>>(
         self,
         pool: &Pool<Db>,
-    ) -> Result<HashMap<i32, Vec<FamilyRow>>> {
+    ) -> Result<HashMap<i32, Vec<&'a FamilyRow>>> {
         let tree = Manager::tree(pool, self.id, HashMap::new(), 0, true, true).await?;
 
         Ok(tree)
