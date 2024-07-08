@@ -83,6 +83,11 @@ impl FamilyRow {
         pool: &Pool<Db>,
     ) -> Result<HashMap<i32, Vec<FamilyRow>>> {
         let tree = Manager::tree(pool, self, HashMap::new(), 0, true, true).await?;
+        assert!(
+            !tree.is_empty(),
+            "Tree was expected to have at least one node."
+        );
+
         Ok(tree)
     }
 
