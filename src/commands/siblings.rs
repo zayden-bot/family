@@ -14,12 +14,12 @@ use super::FamilyCommand;
 pub struct Siblings;
 
 #[async_trait]
-impl FamilyCommand<Vec<String>> for Siblings {
+impl FamilyCommand<(UserId, Vec<String>)> for Siblings {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
-    ) -> Result<Vec<String>> {
+    ) -> Result<(UserId, Vec<String>)> {
         let user = match interaction.data.options().first() {
             Some(ResolvedOption {
                 value: ResolvedValue::User(user, _),
@@ -59,7 +59,7 @@ impl FamilyCommand<Vec<String>> for Siblings {
             .try_collect()
             .await?;
 
-        Ok(siblings)
+        Ok((user.id, siblings))
     }
 
     fn register() -> CreateCommand {
