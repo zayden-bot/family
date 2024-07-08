@@ -12,15 +12,21 @@ use crate::{Error, Result};
 
 use super::FamilyCommand;
 
+pub struct RelationshipResponse {
+    other_id: UserId,
+    user_id: UserId,
+    relationship: Relationship,
+}
+
 pub struct RelationshipCmd;
 
 #[async_trait]
-impl FamilyCommand<(UserId, Relationship)> for RelationshipCmd {
+impl FamilyCommand<RelationshipResponse> for RelationshipCmd {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
-    ) -> Result<(UserId, Relationship)> {
+    ) -> Result<RelationshipResponse> {
         interaction.defer(ctx).await?;
 
         let options = interaction.data.options();
@@ -47,7 +53,11 @@ impl FamilyCommand<(UserId, Relationship)> for RelationshipCmd {
 
         let relationship = user_info.relationship(other.id);
 
-        Ok((other.id, relationship))
+        Ok(RelationshipResponse {
+            other_id: other.id,
+            user_id: user.id,
+            relationship,
+        })
     }
 
     fn register() -> CreateCommand {
