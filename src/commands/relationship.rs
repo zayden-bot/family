@@ -13,9 +13,9 @@ use crate::{Error, Result};
 use super::FamilyCommand;
 
 pub struct RelationshipResponse {
-    other_id: UserId,
-    user_id: UserId,
-    relationship: Relationship,
+    pub other_id: UserId,
+    pub user_id: UserId,
+    pub relationship: Relationship,
 }
 
 pub struct RelationshipCmd;
