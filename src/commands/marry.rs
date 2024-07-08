@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    ResolvedValue,
+    ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool};
 
@@ -16,12 +16,12 @@ const MAX_PARTNERS: usize = 1;
 pub struct Marry;
 
 #[async_trait]
-impl FamilyCommand<()> for Marry {
+impl FamilyCommand<UserId> for Marry {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
-    ) -> Result<()> {
+    ) -> Result<UserId> {
         let target_user = match interaction.data.options()[0].value {
             ResolvedValue::User(user, _) => user,
             _ => unreachable!("User option must be a user"),
@@ -60,7 +60,7 @@ impl FamilyCommand<()> for Marry {
             }
         }
 
-        Ok(())
+        Ok(target_user.id)
     }
 
     fn register() -> CreateCommand {

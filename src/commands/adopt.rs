@@ -7,7 +7,7 @@ use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
 use crate::relationships::Relationship;
-use crate::Error;
+use crate::{Error, Result};
 
 use super::FamilyCommand;
 
@@ -19,7 +19,7 @@ impl FamilyCommand<UserId> for Adopt {
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
-    ) -> crate::Result<UserId> {
+    ) -> Result<UserId> {
         let target_user = match interaction.data.options()[0].value {
             ResolvedValue::User(user, _) => user,
             _ => unreachable!("User option must be a user"),
