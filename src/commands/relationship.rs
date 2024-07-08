@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    ResolvedValue,
+    ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool};
 use zayden_core::parse_options;
@@ -15,12 +15,12 @@ use super::FamilyCommand;
 pub struct RelationshipCmd;
 
 #[async_trait]
-impl FamilyCommand<Relationship> for RelationshipCmd {
+impl FamilyCommand<(UserId, Relationship)> for RelationshipCmd {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
-    ) -> Result<Relationship> {
+    ) -> Result<(UserId, Relationship)> {
         interaction.defer(ctx).await?;
 
         let options = interaction.data.options();
@@ -47,7 +47,7 @@ impl FamilyCommand<Relationship> for RelationshipCmd {
 
         let relationship = user_info.relationship(other.id);
 
-        Ok(relationship)
+        Ok((other.id, relationship))
     }
 
     fn register() -> CreateCommand {
