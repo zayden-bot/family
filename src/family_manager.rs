@@ -15,7 +15,7 @@ pub trait FamilyManager<Db: Database> {
 
     async fn tree(
         pool: &Pool<Db>,
-        user: FamilyRow,
+        user_id: impl Into<i64> + Send,
         mut tree: HashMap<i32, Vec<FamilyRow>>,
         depth: i32,
         add_parents: bool,
@@ -82,11 +82,7 @@ impl FamilyRow {
         self,
         pool: &Pool<Db>,
     ) -> Result<HashMap<i32, Vec<FamilyRow>>> {
-        let tree = Manager::tree(pool, self, HashMap::new(), 0, true, true).await?;
-        assert!(
-            !tree.is_empty(),
-            "Tree was expected to have at least one node."
-        );
+        let tree = Manager::tree(pool, self.id, HashMap::new(), 0, true, true).await?;
 
         Ok(tree)
     }
