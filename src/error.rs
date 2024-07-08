@@ -1,4 +1,5 @@
 use serenity::all::{Mentionable, UserId};
+use zayden_core::ErrorResponse;
 
 use crate::relationships::Relationship;
 
@@ -71,8 +72,8 @@ pub enum Error {
     // endregion
 }
 
-impl Error {
-    pub fn as_response(&self) -> String {
+impl ErrorResponse for Error {
+    fn to_response(&self) -> String {
         match self {
             Self::UserSelfMarry => String::from("You can't marry yourself!"),
             Self::Bot => String::from("Can robots even love?"),
