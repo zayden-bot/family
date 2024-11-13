@@ -7,7 +7,7 @@ use crate::Result;
 
 mod adopt;
 mod block;
-mod cache;
+// mod cache;
 mod information;
 mod marry;
 mod moderation;
