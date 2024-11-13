@@ -22,6 +22,8 @@ pub trait FamilyManager<Db: Database> {
         add_partners: bool,
     ) -> sqlx::Result<HashMap<i32, Vec<FamilyRow>>>;
 
+    async fn reset(pool: &Pool<Db>) -> sqlx::Result<()>;
+
     async fn save(pool: &Pool<Db>, row: &FamilyRow) -> sqlx::Result<()>;
 }
 
