@@ -1,4 +1,4 @@
-use serenity::all::{ComponentInteraction, UserId};
+use serenity::all::{ComponentInteraction, MessageInteractionMetadata, UserId};
 use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
@@ -8,12 +8,11 @@ pub async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     interaction: &ComponentInteraction,
     pool: &Pool<Db>,
 ) -> Result<UserId> {
-    let parent_user = &interaction
-        .message
-        .interaction
-        .as_ref()
-        .ok_or_else(|| Error::NoInteraction)?
-        .user;
+    let parent_user = match interaction.message.interaction_metadata.as_deref() {
+        Some(MessageInteractionMetadata::Command(metadata)) => &metadata.user,
+        None => return Err(Error::NoInteraction),
+        _ => unreachable!("Interaction metadata is not a CommandMetaData"),
+    };
 
     let child_user = &interaction.user;
 
@@ -45,12 +44,11 @@ pub async fn decline(interaction: &ComponentInteraction) -> Result<()> {
         return Err(Error::UnauthorisedUser);
     }
 
-    let command_author = &interaction
-        .message
-        .interaction
-        .as_ref()
-        .ok_or_else(|| Error::NoInteraction)?
-        .user;
+    let command_author = match interaction.message.interaction_metadata.as_deref() {
+        Some(MessageInteractionMetadata::Command(metadata)) => &metadata.user,
+        None => return Err(Error::NoInteraction),
+        _ => unreachable!("Interaction metadata is not a CommandMetaData"),
+    };
 
     if command_author == &interaction.user {
         return Err(Error::AdoptCancelled);

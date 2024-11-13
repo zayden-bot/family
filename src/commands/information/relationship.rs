@@ -7,7 +7,7 @@ use sqlx::{Database, Pool};
 use zayden_core::parse_options;
 
 use crate::family_manager::FamilyManager;
-use crate::relationships::Relationship;
+use crate::relationships::Relationships;
 use crate::{Error, Result};
 
 use super::FamilyCommand;
@@ -15,13 +15,13 @@ use super::FamilyCommand;
 pub struct RelationshipResponse {
     pub other_id: UserId,
     pub user_id: UserId,
-    pub relationship: Relationship,
+    pub relationship: Relationships,
 }
 
-pub struct RelationshipCmd;
+pub struct Relationship;
 
 #[async_trait]
-impl FamilyCommand<RelationshipResponse> for RelationshipCmd {
+impl FamilyCommand<RelationshipResponse> for Relationship {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,

@@ -11,10 +11,10 @@ use crate::{Error, Result};
 
 use super::FamilyCommand;
 
-pub struct Partners;
+pub struct Partner;
 
 #[async_trait]
-impl FamilyCommand<(UserId, Vec<String>)> for Partners {
+impl FamilyCommand<(UserId, Vec<String>)> for Partner {
     async fn run<Db: Database, Manager: FamilyManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
@@ -41,7 +41,7 @@ impl FamilyCommand<(UserId, Vec<String>)> for Partners {
             return Err(Error::NoPartners(user.id));
         }
 
-        let parents: Vec<String> = stream::iter(row.partner_ids)
+        let partners: Vec<String> = stream::iter(row.partner_ids)
             .then(|id| async move {
                 let user_id = UserId::new(id as u64);
                 let user = user_id.to_user(ctx).await?;
@@ -51,11 +51,11 @@ impl FamilyCommand<(UserId, Vec<String>)> for Partners {
             .try_collect()
             .await?;
 
-        Ok((user.id, parents))
+        Ok((user.id, partners))
     }
 
     fn register() -> CreateCommand {
-        CreateCommand::new("partners")
+        CreateCommand::new("partner")
             .description("List who you are married to.")
             .add_option(CreateCommandOption::new(
                 CommandOptionType::User,

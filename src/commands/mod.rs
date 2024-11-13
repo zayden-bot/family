@@ -7,22 +7,20 @@ use crate::Result;
 
 mod adopt;
 mod block;
-mod children;
+mod cache;
+mod information;
 mod marry;
-mod parents;
-mod partners;
-mod relationship;
-mod siblings;
+mod moderation;
 mod tree;
 
 pub use adopt::Adopt;
 pub use block::{Block, Unblock};
-pub use children::Children;
+pub use information::Children;
+pub use information::Parents;
+pub use information::Partner;
+pub use information::Relationship;
+pub use information::Siblings;
 pub use marry::Marry;
-pub use parents::Parents;
-pub use partners::Partners;
-pub use relationship::RelationshipCmd;
-pub use siblings::Siblings;
 pub use tree::Tree;
 
 #[async_trait]

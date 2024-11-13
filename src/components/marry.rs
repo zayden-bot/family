@@ -1,4 +1,4 @@
-use serenity::all::ComponentInteraction;
+use serenity::all::{ComponentInteraction, MessageInteractionMetadata};
 use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
@@ -8,12 +8,11 @@ pub async fn accept<Db: Database, Manager: FamilyManager<Db>>(
     interaction: &ComponentInteraction,
     pool: &Pool<Db>,
 ) -> Result<()> {
-    let author = &interaction
-        .message
-        .interaction
-        .as_ref()
-        .ok_or_else(|| Error::NoInteraction)?
-        .user;
+    let author = match interaction.message.interaction_metadata.as_deref() {
+        Some(MessageInteractionMetadata::Command(metadata)) => &metadata.user,
+        None => return Err(Error::NoInteraction),
+        _ => unreachable!("Interaction metadata is not a CommandMetaData"),
+    };
 
     let partner = &interaction.user;
 
@@ -45,12 +44,11 @@ pub async fn decline(interaction: &ComponentInteraction) -> Result<()> {
         return Err(Error::UnauthorisedUser);
     }
 
-    let author = &interaction
-        .message
-        .interaction
-        .as_ref()
-        .ok_or_else(|| Error::NoInteraction)?
-        .user;
+    let author = match interaction.message.interaction_metadata.as_deref() {
+        Some(MessageInteractionMetadata::Command(metadata)) => &metadata.user,
+        None => return Err(Error::NoInteraction),
+        _ => unreachable!("Interaction metadata is not a CommandMetaData"),
+    };
 
     if author.id == interaction.user.id {
         return Err(Error::MarryCancelled);
