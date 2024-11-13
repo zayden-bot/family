@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use serenity::all::{User, UserId};
 use sqlx::{Database, FromRow, Pool};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::relationships::Relationship;
+use crate::relationships::Relationships;
 use crate::Result;
 
 #[async_trait]
@@ -64,17 +64,17 @@ impl FamilyRow {
         self.parent_ids.push(parent.id);
     }
 
-    pub fn relationship(&self, user_id: UserId) -> Relationship {
+    pub fn relationship(&self, user_id: UserId) -> Relationships {
         let user_id = user_id.get() as i64;
 
         if self.partner_ids.contains(&user_id) {
-            Relationship::Partner
+            Relationships::Partner
         } else if self.parent_ids.contains(&user_id) {
-            Relationship::Parent
+            Relationships::Parent
         } else if self.children_ids.contains(&user_id) {
-            Relationship::Child
+            Relationships::Child
         } else {
-            Relationship::None
+            Relationships::None
         }
     }
 
