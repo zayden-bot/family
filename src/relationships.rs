@@ -1,18 +1,18 @@
 #[derive(Debug, PartialEq)]
-pub enum Relationship {
+pub enum Relationships {
     Partner,
     Parent,
     Child,
     None,
 }
 
-impl std::fmt::Display for Relationship {
+impl std::fmt::Display for Relationships {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Relationship::Partner => write!(f, "Partner"),
-            Relationship::Parent => write!(f, "Parent"),
-            Relationship::Child => write!(f, "Child"),
-            Relationship::None => write!(f, "None"),
+            Relationships::Partner => write!(f, "Partner"),
+            Relationships::Parent => write!(f, "Parent"),
+            Relationships::Child => write!(f, "Child"),
+            Relationships::None => write!(f, "None"),
         }
     }
 }

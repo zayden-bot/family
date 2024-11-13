@@ -7,4 +7,4 @@ mod relationships;
 pub use error::{Error, Result};
 pub use family_manager::FamilyManager;
 pub use family_manager::FamilyRow;
-pub use relationships::Relationship;
+pub use relationships::Relationships;

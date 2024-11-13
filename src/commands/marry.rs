@@ -6,7 +6,7 @@ use serenity::all::{
 use sqlx::{Database, Pool};
 
 use crate::family_manager::FamilyManager;
-use crate::relationships::Relationship;
+use crate::relationships::Relationships;
 use crate::{Error, Result};
 
 use super::FamilyCommand;
@@ -42,7 +42,7 @@ impl FamilyCommand<UserId> for Marry {
         if let Some(row) = Manager::get_row(pool, interaction.user.id).await? {
             let relationship = row.relationship(target_user.id);
 
-            if relationship != Relationship::None {
+            if relationship != Relationships::None {
                 return Err(Error::AlreadyRelated {
                     target: target_user.id,
                     relationship,

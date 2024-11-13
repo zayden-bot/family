@@ -1,7 +1,7 @@
 use serenity::all::{Mentionable, UserId};
 use zayden_core::ErrorResponse;
 
-use crate::relationships::Relationship;
+use crate::relationships::Relationships;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -13,7 +13,7 @@ pub enum Error {
     InvalidUserId,
     AlreadyRelated {
         target: UserId,
-        relationship: Relationship,
+        relationship: Relationships,
     },
     UnauthorisedUser,
     NoMentionedUser,
